@@ -25,8 +25,8 @@ MemWatchEditorDialog::MemWatchEditorDialog(QWidget *parent, melonDS::NDS* nds)
 {
     QFont monospaceFont("Courier", 9);
     setFont(monospaceFont);
-    setMinimumHeight(400);
-    setMinimumWidth(400);
+    setMinimumHeight(700);
+    setMinimumWidth(600);
 
     auto mainLayout = new QVBoxLayout(this);
 
