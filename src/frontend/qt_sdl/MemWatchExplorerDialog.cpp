@@ -3,8 +3,6 @@
 #include <QListWidgetItem>
 #include <QDebug>
 #include <QMenu>
-#include <QMouseEvent>
-#include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QCloseEvent>
 #include <QCheckBox>
@@ -12,13 +10,13 @@
 #include <QPushButton>
 #include <QLabel>
 #include <QTabWidget>
-#include <cstring>
 #include <algorithm>
 
 #include "types.h"
 #include "NDS.h"
 #include "Window.h"
 #include "EmuInstance.h"
+#include "MemWatchEditorDialog.h"
 
 using namespace melonDS;
 
@@ -141,12 +139,19 @@ void MemWatchExplorer::onContextMenu(const QPoint &pos)
 
     QMenu contextMenu;
     QAction *teleportAction = contextMenu.addAction("Teleport Link here");
+    QAction *editActor = contextMenu.addAction("Edit Entity");
     
     QAction *selectedAction = contextMenu.exec(mapToGlobal(pos));
     if (selectedAction == teleportAction)
     {
         int row = this->row(item);
         teleportLinkToObject(row);
+    }
+
+    else if (selectedAction == editActor)
+    {
+        int row = this->row(item);
+        openEditor(row);
     }
 }
 
@@ -433,6 +438,39 @@ void MemWatchActor::teleportLinkToObject(int row)
     qDebug() << "Teleported Link to actor position:" << posX << posY << posZ;
 }
 
+void MemWatchActor::openEditor(int row)
+{
+    QListWidgetItem *item = this->item(row);
+    if (!item)
+    {
+        qDebug() << "Item not found for row" << row;
+        return;
+    }
+
+    uint32_t tableEntryAddress = item->data(Qt::UserRole).toUInt();
+    if (!tableEntryAddress)
+    {
+        qDebug() << "No actor address stored";
+        return;
+    }
+
+    void *actorPtrPtr = GetRAM(tableEntryAddress);
+    if (!actorPtrPtr)
+    {
+        qDebug() << "Failed to get actor pointer at address" << QString::number(tableEntryAddress, 16);
+        return;
+    }
+
+    uint32_t actorAddress = *(uint32_t *)actorPtrPtr;
+    if (!actorAddress)
+    {
+        qDebug() << "Actor address is null";
+        return;
+    }
+
+    MemWatchEditorActor::openDlg(this, this->GetNDS(), this->readActorData(actorAddress));
+}
+
 QString MemWatchActor::actorIdToFourCC(uint32_t actorId)
 {
     uint8_t bytes[4];
@@ -472,6 +510,7 @@ ActorData MemWatchActor::readActorData(uint32_t actorAddress)
     data.velX = 0;
     data.velY = 0;
     data.velZ = 0;
+    data.state = 0;
     data.flags = 0;
     data.actorId = 0;
     data.actorIdString = "????";
@@ -499,6 +538,12 @@ ActorData MemWatchActor::readActorData(uint32_t actorAddress)
         data.velX = vel[0];
         data.velY = vel[1];
         data.velZ = vel[2];
+    }
+
+    void *statePtr = GetRAM(actorAddress + 0x4C);
+    if (statePtr)
+    {
+        data.state = *(int16_t *)statePtr;
     }
 
     void *flagsPtr = GetRAM(actorAddress + 0x58);
@@ -635,7 +680,7 @@ void MemWatchActor::refreshList()
         float velY = q20ToFloat(actor.velY);
         float velZ = q20ToFloat(actor.velZ);
 
-        QString displayText = QString("[%1]  Pos:(%2,%3,%4)  Vel:(%5,%6,%7)  F:0x%8  P:0x%9;0x%10;0x%11;0x%12 @ 0x%13")
+        QString displayText = QString("[%1]  Pos:(%2,%3,%4)  Vel:(%5,%6,%7) S:0x%8  F:0x%9  P:0x%10;0x%11;0x%12;0x%13 @ 0x%14")
             .arg(actor.actorIdString, -4)
             .arg(posX, 7, 'f', 1)
             .arg(posY, 7, 'f', 1)
@@ -643,6 +688,7 @@ void MemWatchActor::refreshList()
             .arg(velX, 7, 'f', 1)
             .arg(velY, 7, 'f', 1)
             .arg(velZ, 7, 'f', 1)
+	    .arg(actor.state, 4, 16, QChar('0'))
             .arg(actor.flags, 8, 16, QChar('0'))
             .arg(actor.params[0], 4, 16, QChar('0'))
             .arg(actor.params[1], 4, 16, QChar('0'))
@@ -775,6 +821,39 @@ void MemWatchMapObject::teleportLinkToObject(int row)
     qDebug() << "Teleported Link to mapobject position:" << posX << posY << posZ;
 }
 
+void MemWatchMapObject::openEditor(int row)
+{
+    QListWidgetItem *item = this->item(row);
+    if (!item)
+    {
+        qDebug() << "Item not found for row" << row;
+        return;
+    }
+
+    uint32_t tableEntryAddress = item->data(Qt::UserRole).toUInt();
+    if (!tableEntryAddress)
+    {
+        qDebug() << "No mapobject address stored";
+        return;
+    }
+
+    void *mapObjPtrPtr = GetRAM(tableEntryAddress);
+    if (!mapObjPtrPtr)
+    {
+        qDebug() << "Failed to get mapobject pointer at address" << QString::number(tableEntryAddress, 16);
+        return;
+    }
+
+    uint32_t mapObjAddress = *(uint32_t *)mapObjPtrPtr;
+    if (!mapObjAddress)
+    {
+        qDebug() << "MapObject address is null";
+        return;
+    }
+
+    MemWatchEditorMapObject::openDlg(this, this->GetNDS(), this->readMapObjectData(mapObjAddress));
+}
+
 QString MemWatchMapObject::mapObjectIdToString(uint32_t mapObjectId)
 {
     uint8_t bytes[4];
@@ -811,6 +890,7 @@ MapObjectData MemWatchMapObject::readMapObjectData(uint32_t mapobjectAddress)
     data.posX = 0;
     data.posY = 0;
     data.posZ = 0;
+    data.state = 0;
     data.flags = 0;
     data.mapObjectId = 0;
     data.mapObjectIdString = "????";
@@ -831,6 +911,12 @@ MapObjectData MemWatchMapObject::readMapObjectData(uint32_t mapobjectAddress)
         data.posX = pos[0];
         data.posY = pos[1];
         data.posZ = pos[2];
+    }
+
+    void *statePtr = GetRAM(mapobjectAddress + 0x16);
+    if (statePtr)
+    {
+        data.state = *(int16_t *)statePtr;
     }
 
     void *flagsPtr = GetRAM(mapobjectAddress + 0x1C);
@@ -970,13 +1056,14 @@ void MemWatchMapObject::refreshList()
         float posY = q20ToFloat(mapobject.posY);
         float posZ = q20ToFloat(mapobject.posZ);
         
-        QString displayText = QString("[%1_0x%2_0x%3]  Pos:(%4,%5,%6)  F:0x%7  P:0x%8;0x%9;0x%10;0x%11 @ 0x%12")
+        QString displayText = QString("[%1_0x%2_0x%3]  Pos:(%4,%5,%6) S:0x%7  F:0x%8  P:0x%9;0x%10;0x%11;0x%12 @ 0x%13")
             .arg(mapobject.mapObjectIdString, -4)
             .arg(mapobject.initialPos[0], 2, 16, QChar('0'))
             .arg(mapobject.initialPos[1], 2, 16, QChar('0'))
             .arg(posX, 7, 'f', 1)
             .arg(posY, 7, 'f', 1)
             .arg(posZ, 7, 'f', 1)
+	    .arg(mapobject.state, 4, 16, QChar('0'))
             .arg(mapobject.flags, 4, 16, QChar('0'))
             .arg(mapobject.params[0], 4, 16, QChar('0'))
             .arg(mapobject.params[1], 4, 16, QChar('0'))

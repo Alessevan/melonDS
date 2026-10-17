@@ -39,6 +39,7 @@ public:
     
     virtual void toggleKill(int row, bool kill) = 0;
     virtual void teleportLinkToObject(int row) = 0;
+    virtual void openEditor(int row) = 0;
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -71,6 +72,7 @@ struct ActorData
     uint32_t tableEntryAddress;
     int32_t posX, posY, posZ;
     int32_t velX, velY, velZ;
+    int16_t state;
     uint32_t flags;
     uint32_t actorId;
     QString actorIdString;
@@ -81,7 +83,7 @@ struct ActorData
         return address == other.address &&
                posX == other.posX && posY == other.posY && posZ == other.posZ &&
                velX == other.velX && velY == other.velY && velZ == other.velZ &&
-               flags == other.flags && actorId == other.actorId;
+               state == other.state && flags == other.flags && actorId == other.actorId;
     }
 };
 
@@ -104,6 +106,7 @@ protected:
     void displayObject(const QString &displayText, uint32_t tableEntryAddress) override;
     void toggleKill(int row, bool kill) override;
     void teleportLinkToObject(int row) override;
+    void openEditor(int row) override;
 
 private:
     ActorData readActorData(uint32_t actorAddress);
@@ -122,6 +125,7 @@ struct MapObjectData
     uint32_t address;
     uint32_t tableEntryAddress;
     int32_t posX, posY, posZ;
+    int16_t state;
     unsigned short flags;
     uint32_t mapObjectId;
     QString mapObjectIdString;
@@ -132,7 +136,7 @@ struct MapObjectData
     {
         return address == other.address &&
                posX == other.posX && posY == other.posY && posZ == other.posZ &&
-               flags == other.flags && mapObjectId == other.mapObjectId;
+               state == other.state && flags == other.flags && mapObjectId == other.mapObjectId;
     }
 };
 
@@ -155,6 +159,7 @@ protected:
     void displayObject(const QString &displayText, uint32_t tableEntryAddress) override;
     void toggleKill(int row, bool kill) override;
     void teleportLinkToObject(int row) override;
+    void openEditor(int row) override;
 
 private:
     MapObjectData readMapObjectData(uint32_t mapobjectAddress);
