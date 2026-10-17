@@ -14,13 +14,13 @@ class QLabel;
 class QCloseEvent;
 class QCheckBox;
 
-class MemWatchEditorDialog : public QDialog
+class MemWatchEditor : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit MemWatchEditorDialog(QWidget* parent, melonDS::NDS* nds);
-    ~MemWatchEditorDialog();
+    explicit MemWatchEditor(QWidget* parent, melonDS::NDS* nds);
+    ~MemWatchEditor();
 
 protected:
     int row = 0;
@@ -49,7 +49,7 @@ private:
     melonDS::NDS* m_nds;
 };
 
-class MemWatchEditorActor : public MemWatchEditorDialog
+class MemWatchEditorActor : public MemWatchEditor
 {
     Q_OBJECT
 
@@ -85,7 +85,7 @@ private:
     ActorData m_actorData;
 };
 
-class MemWatchEditorMapObject : public MemWatchEditorDialog
+class MemWatchEditorMapObject : public MemWatchEditor
 {
     Q_OBJECT
 

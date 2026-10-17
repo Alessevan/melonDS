@@ -1,6 +1,5 @@
 #include "MemWatchEditorDialog.h"
 
-#include <iostream>
 #include <QPushButton>
 #include <QCloseEvent>
 #include <QVBoxLayout>
@@ -9,7 +8,7 @@
 #include <QLabel>
 #include <QCheckBox>
 
-MemWatchEditorDialog::MemWatchEditorDialog(QWidget *parent, melonDS::NDS* nds)
+MemWatchEditor::MemWatchEditor(QWidget *parent, melonDS::NDS* nds)
     : QDialog(parent)
     , m_nds(nds)
     , m_posX(nullptr)
@@ -99,19 +98,19 @@ MemWatchEditorDialog::MemWatchEditorDialog(QWidget *parent, melonDS::NDS* nds)
     btns->addWidget(m_save);
     mainLayout->addLayout(btns);
 
-    connect(m_save, &QPushButton::clicked, this, &MemWatchEditorDialog::onSaveClicked);
+    connect(m_save, &QPushButton::clicked, this, &MemWatchEditor::onSaveClicked);
 }
 
-void MemWatchEditorDialog::closeEvent(QCloseEvent* event)
+void MemWatchEditor::closeEvent(QCloseEvent* event)
 {
     QDialog::closeEvent(event);
 }
 
-MemWatchEditorDialog::~MemWatchEditorDialog()
+MemWatchEditor::~MemWatchEditor()
 {
 }
 
-bool MemWatchEditorDialog::writeMemory(uint32_t address, const void* data, int size)
+bool MemWatchEditor::writeMemory(uint32_t address, const void* data, int size)
 {
     if (!m_nds)
         return false;
@@ -156,7 +155,7 @@ bool MemWatchEditorDialog::writeMemory(uint32_t address, const void* data, int s
 MemWatchEditorActor* MemWatchEditorActor::currentDlg = nullptr;
 
 MemWatchEditorActor::MemWatchEditorActor(QWidget* parent, melonDS::NDS* nds, ActorData actor) :
-    MemWatchEditorDialog(parent, nds)
+    MemWatchEditor(parent, nds)
     , m_actorData(actor)
     , m_velX(nullptr)
     , m_velY(nullptr)
@@ -273,7 +272,7 @@ void MemWatchEditorActor::onSaveClicked()
 MemWatchEditorMapObject* MemWatchEditorMapObject::currentDlg = nullptr;
 
 MemWatchEditorMapObject::MemWatchEditorMapObject(QWidget* parent, melonDS::NDS* nds, MapObjectData mapObjectData) :
-    MemWatchEditorDialog(parent, nds)
+    MemWatchEditor(parent, nds)
     , m_mapObjectData(mapObjectData)
 {
     this->m_addressLabel->setText(QString::number(mapObjectData.address, 16));
