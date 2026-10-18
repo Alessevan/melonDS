@@ -28,6 +28,9 @@ protected:
     QLineEdit* m_posX;
     QLineEdit* m_posY;
     QLineEdit* m_posZ;
+    QLineEdit* m_velX;
+    QLineEdit* m_velY;
+    QLineEdit* m_velZ;
     QLineEdit* m_state;
     std::array<QCheckBox*, 32> m_flagChecks;
     QLineEdit* m_param0;
@@ -72,10 +75,6 @@ public:
     }
 
 protected:
-    QLineEdit* m_velX;
-    QLineEdit* m_velY;
-    QLineEdit* m_velZ;
-
     void closeEvent(QCloseEvent* event) override;
 
 private slots:

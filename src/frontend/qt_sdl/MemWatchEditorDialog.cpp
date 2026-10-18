@@ -14,6 +14,9 @@ MemWatchEditor::MemWatchEditor(QWidget *parent, melonDS::NDS* nds)
     , m_posX(nullptr)
     , m_posY(nullptr)
     , m_posZ(nullptr)
+    , m_velX(nullptr)
+    , m_velY(nullptr)
+    , m_velZ(nullptr)
     , m_state(nullptr)
     , m_param0(nullptr)
     , m_param1(nullptr)
@@ -55,6 +58,21 @@ MemWatchEditor::MemWatchEditor(QWidget *parent, melonDS::NDS* nds)
     grid->addWidget(new QLabel(tr("Pos Z:")), row, 0);
     m_posZ = new QLineEdit(this);
     grid->addWidget(m_posZ, row, 1);
+
+    row++;
+    grid->addWidget(new QLabel(tr("Vel X:")), row, 0);
+    m_velX = new QLineEdit(this);
+    grid->addWidget(m_velX, row, 1);
+
+    row++;
+    grid->addWidget(new QLabel(tr("Vel Y:")), row, 0);
+    m_velY = new QLineEdit(this);
+    grid->addWidget(m_velY, row, 1);
+
+    row++;
+    grid->addWidget(new QLabel(tr("Vel Z:")), row, 0);
+    m_velZ = new QLineEdit(this);
+    grid->addWidget(m_velZ, row, 1);
 
     row++;
     grid->addWidget(new QLabel(tr("State:")), row, 0);
@@ -157,9 +175,6 @@ MemWatchEditorActor* MemWatchEditorActor::currentDlg = nullptr;
 MemWatchEditorActor::MemWatchEditorActor(QWidget* parent, melonDS::NDS* nds, ActorData actor) :
     MemWatchEditor(parent, nds)
     , m_actorData(actor)
-    , m_velX(nullptr)
-    , m_velY(nullptr)
-    , m_velZ(nullptr)
 {
     this->m_addressLabel->setText(QString::number(actor.address, 16));
 
