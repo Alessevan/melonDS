@@ -139,7 +139,11 @@ bool GdbStub::Init(int port)
 	}
 
 	nodelay = 1;
+#ifdef _WIN32
+	setsockopt(SockFd, IPPROTO_TCP, TCP_NODELAY, (const char*)&nodelay, sizeof(nodelay));
+#else
 	setsockopt(SockFd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay));
+#endif
 
 	return true;
 
